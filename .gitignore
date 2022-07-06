@@ -1,0 +1,12 @@
+*.pyc
+.idea/*
+
+venv
+*.iml
+target
+logs/
+#config/env.properties
+#config/private.properties
+#config/application.properties
+.idea
+*.log
