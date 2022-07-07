@@ -3,17 +3,17 @@ package com.thanhbuitien.actions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-public class CalculatorTest {
+public class PoolActionTest {
 
-    private static Calculator calculator;
+    private static PoolAction poolAction;
 
     @BeforeAll
     static void beforeAll() {
-        calculator = new Calculator();
+        poolAction = new PoolAction();
     }
 
     @Test
     void testCal() {
-        Integer integer = calculator.method1();
+
     }
 }
