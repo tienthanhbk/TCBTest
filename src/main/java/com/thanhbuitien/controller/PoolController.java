@@ -4,8 +4,8 @@ import com.thanhbuitien.common.Utils;
 import com.thanhbuitien.constant.Constants;
 import com.thanhbuitien.exception.ClientErrorException;
 import com.thanhbuitien.models.dto.PoolDto;
-import com.thanhbuitien.models.dto.PoolQueryDto;
-import com.thanhbuitien.models.dto.PoolQueryRes;
+import com.thanhbuitien.models.dto.QuantileQueryDto;
+import com.thanhbuitien.models.dto.QuantileQueryRes;
 import com.thanhbuitien.service.IPoolService;
 import com.thanhbuitien.service.impl.PoolService;
 import org.slf4j.Logger;
@@ -75,14 +75,10 @@ public class PoolController {
     }
 
     @RequestMapping(value = "/query/quantile", method = POST)
-    public Response queryQuantile(@RequestBody PoolQueryDto poolQueryDto) {
+    public Response queryQuantile(@RequestBody QuantileQueryDto queryDto) {
         try {
-            List<Integer> values = poolService.getValuesById(poolQueryDto.getPoolId());
-            Integer size = values.size();
-            List<Integer> sortedValues = values.stream().sorted().collect(Collectors.toList());
-            Double quantile = Utils.calPercentile(sortedValues, poolQueryDto.getPercentile());
-
-            return ResponseFactory.getSuccessResponse("Ok", new PoolQueryRes(size, quantile));
+            QuantileQueryRes res = poolService.queryQuantile(queryDto.getPoolId(), queryDto.getPercentile());
+            return ResponseFactory.getSuccessResponse("Ok", res);
         } catch (ClientErrorException e) {
             throw new ClientErrorException(e.getMessage());
         } catch (Exception e) {
