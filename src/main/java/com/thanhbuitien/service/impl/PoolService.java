@@ -11,6 +11,7 @@ import com.thanhbuitien.repositories.IQuantileCacheRepo;
 import com.thanhbuitien.repositories.impl.PoolMemoryRepo;
 import com.thanhbuitien.repositories.impl.QuantileCacheRepo;
 import com.thanhbuitien.service.IPoolService;
+import org.apache.commons.math3.stat.StatUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -38,8 +39,9 @@ public class PoolService implements IPoolService {
 
         existedPoolEntity.getValues().addAll(values);
 
-        // Currently not necessary because of using in-memory repo, but in the future may use database to store pool values
         poolRepo.update(poolId, existedPoolEntity.getValues());
+        // Clear pool cached result when update
+        quantileCacheRepo.clearQuantile(poolId);
         return Constants.FLAG_APPEND;
     }
 
@@ -73,8 +75,12 @@ public class PoolService implements IPoolService {
         }
         List<Integer> values = getValuesById(poolId);
         size= values.size();
-        List<Integer> sortedValues = values.stream().sorted().collect(Collectors.toList());
-        quantile = Utils.calPercentile(sortedValues, percentile);
+        if (size > 100) {
+            quantile = StatUtils.percentile(values.stream().mapToDouble(i -> i).toArray(), percentile);
+        } else {
+            List<Integer> sortedValues = values.stream().sorted().collect(Collectors.toList());
+            quantile = Utils.calPercentile(sortedValues, percentile);
+        }
 
         // Save result to cache
         quantileCacheRepo.save(poolId, size, percentile, quantile);
