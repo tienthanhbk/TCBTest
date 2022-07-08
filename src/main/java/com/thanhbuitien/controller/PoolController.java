@@ -36,30 +36,6 @@ public class PoolController {
         this.poolService = poolService;
     }
 
-    @RequestMapping(value = "/ping", method = GET)
-    public Response ping() {
-        try {
-            return ResponseFactory.getSuccessResponse("Pong", new ArrayList());
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            throw new InternalServerException("Internal server error");
-        }
-    }
-
-    @RequestMapping(value = "/get-by-id", method = GET)
-    public Response addOrUpdate(@RequestHeader Long poolId) {
-        try {
-            List<Integer> values = poolService.getValuesById(poolId);
-
-            return ResponseFactory.getSuccessResponse("Ok", new PoolDto(poolId, values));
-        } catch (ClientErrorException e) {
-            throw new ClientErrorException(e.getMessage());
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            throw new ClientErrorException("Something goes wrong!");
-        }
-    }
-
     @RequestMapping(value = "/create-or-append", method = POST)
     public Response addOrUpdate(@RequestBody PoolDto poolDto) {
         try {
