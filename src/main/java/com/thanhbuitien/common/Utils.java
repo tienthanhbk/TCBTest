@@ -15,28 +15,28 @@ public class Utils {
      * - If pos < 1 return the smallest element in the array.
      * - Else if pos >= n return the largest element in the array.
      * - Else let lower be the element in position floor(pos) in the array and let upper be the next element in the array. Return lower + d * (upper - lower)
-     * @param values
+     * @param sortedValues
      * @param p
      * @return
      */
-    public static double calPercentile(List<Integer> values, double p) {
-        int n = values.size();
+    public static double calPercentile(List<Integer> sortedValues, double p) {
+        int n = sortedValues.size();
         if (n == 1) {
-            return values.get(0);
+            return sortedValues.get(0);
         }
         double pos = p * (n + 1) / 100f;
         if (pos < 1) {
-            return values.get(0);
+            return sortedValues.get(0);
         }
         if (pos >= n) {
-            return values.get(n - 1);
+            return sortedValues.get(n - 1);
         }
         double f_pos = Math.floor(pos);
 
         double d = pos - f_pos;
 
-        double lower = values.get((int)f_pos - 1);
-        double upper = values.get((int)f_pos);
+        double lower = sortedValues.get((int)f_pos - 1);
+        double upper = sortedValues.get((int)f_pos);
 
         return lower + d * (upper - lower);
     }

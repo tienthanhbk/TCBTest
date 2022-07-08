@@ -1,13 +1,17 @@
 package com.thanhbuitien.controller;
 
+import com.thanhbuitien.common.Utils;
 import com.thanhbuitien.constant.Constants;
 import com.thanhbuitien.exception.ClientErrorException;
 import com.thanhbuitien.models.dto.PoolDto;
+import com.thanhbuitien.models.dto.PoolQueryDto;
+import com.thanhbuitien.models.dto.PoolQueryRes;
 import com.thanhbuitien.service.IPoolService;
 import com.thanhbuitien.service.impl.PoolService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.thanhbuitien.exception.InternalServerException;
@@ -15,11 +19,14 @@ import com.thanhbuitien.response.Response;
 import com.thanhbuitien.response.ResponseFactory;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
+@RequestMapping("/pool")
 public class PoolController {
     Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -39,12 +46,43 @@ public class PoolController {
         }
     }
 
-    @RequestMapping(value = "/pool/create_or_append", method = POST)
+    @RequestMapping(value = "/get-by-id", method = GET)
+    public Response addOrUpdate(@RequestHeader Long poolId) {
+        try {
+            List<Integer> values = poolService.getValuesById(poolId);
+
+            return ResponseFactory.getSuccessResponse("Ok", new PoolDto(poolId, values));
+        } catch (ClientErrorException e) {
+            throw new ClientErrorException(e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new ClientErrorException("Something goes wrong!");
+        }
+    }
+
+    @RequestMapping(value = "/create-or-append", method = POST)
     public Response addOrUpdate(@RequestBody PoolDto poolDto) {
         try {
-            Integer flag = poolService.insertOrUpdate(poolDto);
+            Integer flag = poolService.insertOrUpdate(poolDto.getPoolId(), poolDto.getPoolValues());
             String status = flag.equals(Constants.FLAG_APPEND) ? Constants.STATUS_APPENDED : Constants.STATUS_INSERTED;
             return ResponseFactory.getSuccessResponse("Ok", status);
+        } catch (ClientErrorException e) {
+            throw new ClientErrorException(e.getMessage());
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            throw new ClientErrorException("Something goes wrong!");
+        }
+    }
+
+    @RequestMapping(value = "/query/quantile", method = POST)
+    public Response queryQuantile(@RequestBody PoolQueryDto poolQueryDto) {
+        try {
+            List<Integer> values = poolService.getValuesById(poolQueryDto.getPoolId());
+            Integer size = values.size();
+            List<Integer> sortedValues = values.stream().sorted().collect(Collectors.toList());
+            Double quantile = Utils.calPercentile(sortedValues, poolQueryDto.getPercentile());
+
+            return ResponseFactory.getSuccessResponse("Ok", new PoolQueryRes(size, quantile));
         } catch (ClientErrorException e) {
             throw new ClientErrorException(e.getMessage());
         } catch (Exception e) {
